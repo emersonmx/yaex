@@ -11,7 +11,7 @@ result = yaex(
     append("Hello"),
     append("World"),
 )
-print(result, end="")
+print(result)
 # >Hello
 # >World
 # >
@@ -23,7 +23,7 @@ result = yaex(
     at_line(2),
     delete(),
 )
-print(result, end="")
+print(result)
 # >first line
 # >third line
 # >
@@ -34,7 +34,7 @@ result = yaex(
     delete(),
     insert("# Yet Another EX command library"),
 )
-print(result, end="")
+print(result)
 # ># Yet Another EX command library
 # >
 # >This is a library based on the ex command.
