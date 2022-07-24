@@ -189,3 +189,12 @@ def test_should_delete_any_line() -> None:
         delete(),
     )
     assert buffer == "first line\nsecond line\nfourth line\nfifth line\n"
+
+
+def test_should_move_cursor_when_append_a_line() -> None:
+    buffer = yaex(
+        append("first line"),
+        append("second line"),
+        append("third line"),
+    )
+    assert buffer == "first line\nsecond line\nthird line\n"

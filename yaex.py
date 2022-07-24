@@ -60,7 +60,13 @@ def insert(input_string: str) -> Command:
 
 def append(input_string: str) -> Command:
     def cmd(ctx: Context) -> Context:
-        ctx.lines.insert(ctx.cursor + 1, input_string + "\n")
+        if ctx.lines:
+            ctx.lines.insert(ctx.cursor + 1, input_string + "\n")
+            ctx.cursor += 1
+        else:
+            ctx.lines.append(input_string + "\n")
+            ctx.cursor = len(ctx.lines) - 1
+
         return ctx
 
     return cmd
