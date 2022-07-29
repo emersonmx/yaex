@@ -8,7 +8,6 @@ from yaex import (
     at_line,
     delete,
     insert,
-    read_string,
     yaex,
 )
 
@@ -47,19 +46,12 @@ def test_should_insert_a_line_after_an_append() -> None:
     assert buffer == "World\nHello\n"
 
 
-def test_should_read_string() -> None:
-    buffer = yaex(
-        read_string("Hello World\n"),
-    )
-    assert buffer == "Hello World\n"
-
-
 def test_should_insert_on_the_penultimate_line_by_default() -> None:
     expectd_buffer = (
         "first line\nsecond line\nthird line\nfourth line\nfifth line\n"
     )
     buffer = yaex(
-        read_string("first line\nsecond line\nthird line\nfifth line\n"),
+        append("first line\nsecond line\nthird line\nfifth line\n"),
         insert("fourth line"),
     )
     assert buffer == expectd_buffer
@@ -67,7 +59,7 @@ def test_should_insert_on_the_penultimate_line_by_default() -> None:
 
 def test_should_append_on_the_last_line_by_default() -> None:
     buffer = yaex(
-        read_string("Hello\n"),
+        append("Hello"),
         append("World"),
     )
     assert buffer == "Hello\nWorld\n"
@@ -75,7 +67,7 @@ def test_should_append_on_the_last_line_by_default() -> None:
 
 def test_should_delete_last_line_by_default() -> None:
     buffer = yaex(
-        read_string("Hello\nWorld\n"),
+        append("Hello\nWorld\n"),
         delete(),
     )
     assert buffer == "Hello\n"
@@ -83,7 +75,7 @@ def test_should_delete_last_line_by_default() -> None:
 
 def test_should_insert_on_the_first_line() -> None:
     buffer = yaex(
-        read_string("second line\nthird line\n"),
+        append("second line\nthird line\n"),
         at_first_line(),
         insert("first line"),
     )
@@ -92,7 +84,7 @@ def test_should_insert_on_the_first_line() -> None:
 
 def test_should_append_on_the_second_line() -> None:
     buffer = yaex(
-        read_string("first line\nthird line\n"),
+        append("first line\nthird line\n"),
         at_first_line(),
         append("second line"),
     )
@@ -101,7 +93,7 @@ def test_should_append_on_the_second_line() -> None:
 
 def test_should_delete_the_first_line() -> None:
     buffer = yaex(
-        read_string("Hello\nWorld\n"),
+        append("Hello\nWorld\n"),
         at_first_line(),
         delete(),
     )
@@ -110,7 +102,7 @@ def test_should_delete_the_first_line() -> None:
 
 def test_should_insert_on_the_penultimate_line() -> None:
     buffer = yaex(
-        read_string("first line\nthird line\n"),
+        append("first line\nthird line\n"),
         at_last_line(),
         insert("second line"),
     )
@@ -119,7 +111,7 @@ def test_should_insert_on_the_penultimate_line() -> None:
 
 def test_should_append_on_the_last_line() -> None:
     buffer = yaex(
-        read_string("first line\nsecond line\n"),
+        append("first line\nsecond line\n"),
         at_last_line(),
         append("third line"),
     )
@@ -128,7 +120,7 @@ def test_should_append_on_the_last_line() -> None:
 
 def test_should_delete_last_line() -> None:
     buffer = yaex(
-        read_string("first line\nsecond line\nthird line\n"),
+        append("first line\nsecond line\nthird line\n"),
         at_last_line(),
         delete(),
     )
@@ -141,24 +133,24 @@ def test_should_raise_error_when_move_the_cursor_to_an_invalid_line() -> None:
     )
     with pytest.raises(InvalidOperation):
         yaex(
-            read_string(input_text),
+            append(input_text),
             at_line(0),
         )
     with pytest.raises(InvalidOperation):
         yaex(
-            read_string(input_text),
+            append(input_text),
             at_line(6),
         )
     with pytest.raises(InvalidOperation):
         yaex(
-            read_string(input_text),
+            append(input_text),
             at_line(-1),
         )
 
 
 def test_should_insert_at_any_line() -> None:
     buffer = yaex(
-        read_string("first line\nsecond line\nfourth line\nfifth line\n"),
+        append("first line\nsecond line\nfourth line\nfifth line\n"),
         at_line(3),
         insert("third line"),
     )
@@ -170,7 +162,7 @@ def test_should_insert_at_any_line() -> None:
 
 def test_should_append_at_any_line() -> None:
     buffer = yaex(
-        read_string("first line\nsecond line\nfourth line\nfifth line\n"),
+        append("first line\nsecond line\nfourth line\nfifth line\n"),
         at_line(2),
         append("third line"),
     )
@@ -182,7 +174,7 @@ def test_should_append_at_any_line() -> None:
 
 def test_should_delete_any_line() -> None:
     buffer = yaex(
-        read_string(
+        append(
             "first line\nsecond line\nthird line\nfourth line\nfifth line\n",
         ),
         at_line(3),

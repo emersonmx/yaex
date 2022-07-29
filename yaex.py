@@ -86,13 +86,3 @@ def delete() -> Command:
         raise InvalidOperation("Cannot delete to an empty buffer.")
 
     return cmd
-
-
-def read_string(input_string: str) -> Command:
-    def cmd(ctx: Context) -> Context:
-        new_lines = input_string.splitlines(keepends=True)
-        ctx.cursor += len(new_lines) - 1
-        ctx.lines += new_lines
-        return ctx
-
-    return cmd
