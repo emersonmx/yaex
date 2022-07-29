@@ -13,9 +13,7 @@ def test_should_delete_a_line() -> None:
 
     result = command(context)
 
-    assert result.cursor == 0
-    assert result.lines == ["second line\n", "third line\n"]
-    assert len(result.lines) == 2
+    assert result == Context(0, ["second line\n", "third line\n"])
 
 
 def test_should_delete_lines() -> None:
@@ -26,9 +24,7 @@ def test_should_delete_lines() -> None:
     command = delete()
     result = command(context)
 
-    assert result.cursor == 0
-    assert result.lines == ["third line\n"]
-    assert len(result.lines) == 1
+    assert result == Context(0, ["third line\n"])
 
 
 def test_should_delete_between_lines() -> None:
@@ -37,12 +33,7 @@ def test_should_delete_between_lines() -> None:
 
     result = command(context)
 
-    assert result.cursor == 1
-    assert result.lines == [
-        "first line\n",
-        "third line\n",
-    ]
-    assert len(result.lines) == 2
+    assert result == Context(1, ["first line\n", "third line\n"])
 
 
 def test_should_raise_error_when_delete_an_empty_context() -> None:

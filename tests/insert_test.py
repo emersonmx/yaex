@@ -13,9 +13,7 @@ def test_should_insert_a_line() -> None:
 
     result = command(context)
 
-    assert result.cursor == 0
-    assert result.lines[0] == "a line\n"
-    assert len(result.lines) == 2
+    assert result == Context(0, ["a line\n", "test\n"])
 
 
 def test_should_insert_lines() -> None:
@@ -26,9 +24,7 @@ def test_should_insert_lines() -> None:
     command = insert("another line")
     result = command(context)
 
-    assert result.cursor == 0
-    assert result.lines == ["another line\n", "a line\n", "test\n"]
-    assert len(result.lines) == 3
+    assert result == Context(0, ["another line\n", "a line\n", "test\n"])
 
 
 def test_should_insert_lines_in_a_single_command() -> None:
@@ -37,14 +33,10 @@ def test_should_insert_lines_in_a_single_command() -> None:
 
     result = command(context)
 
-    assert result.cursor == 2
-    assert result.lines == [
-        "first line\n",
-        "second line\n",
-        "third line\n",
-        "test\n",
-    ]
-    assert len(result.lines) == 4
+    assert result == Context(
+        2,
+        ["first line\n", "second line\n", "third line\n", "test\n"],
+    )
 
 
 def test_should_insert_lines_without_trailing_new_line() -> None:
@@ -53,14 +45,10 @@ def test_should_insert_lines_without_trailing_new_line() -> None:
 
     result = command(context)
 
-    assert result.cursor == 2
-    assert result.lines == [
-        "first line\n",
-        "second line\n",
-        "third line\n",
-        "test\n",
-    ]
-    assert len(result.lines) == 4
+    assert result == Context(
+        2,
+        ["first line\n", "second line\n", "third line\n", "test\n"],
+    )
 
 
 def test_should_insert_between_lines() -> None:
@@ -69,13 +57,10 @@ def test_should_insert_between_lines() -> None:
 
     result = command(context)
 
-    assert result.cursor == 1
-    assert result.lines == [
-        "first line\n",
-        "second line\n",
-        "third line\n",
-    ]
-    assert len(result.lines) == 3
+    assert result == Context(
+        1,
+        ["first line\n", "second line\n", "third line\n"],
+    )
 
 
 def test_should_raise_error_when_insert_into_an_empty_context() -> None:

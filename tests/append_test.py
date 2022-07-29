@@ -11,9 +11,7 @@ def test_should_append_a_line() -> None:
 
     result = command(context)
 
-    assert result.cursor == 0
-    assert result.lines == ["a line\n"]
-    assert len(result.lines) == 1
+    assert result == Context(0, ["a line\n"])
 
 
 def test_should_append_lines() -> None:
@@ -24,9 +22,7 @@ def test_should_append_lines() -> None:
     command = append("another line")
     result = command(context)
 
-    assert result.cursor == 1
-    assert result.lines == ["a line\n", "another line\n"]
-    assert len(result.lines) == 2
+    assert result == Context(1, ["a line\n", "another line\n"])
 
 
 def test_should_append_lines_in_a_single_command() -> None:
@@ -35,13 +31,10 @@ def test_should_append_lines_in_a_single_command() -> None:
 
     result = command(context)
 
-    assert result.cursor == 2
-    assert result.lines == [
-        "first line\n",
-        "second line\n",
-        "third line\n",
-    ]
-    assert len(result.lines) == 3
+    assert result == Context(
+        2,
+        ["first line\n", "second line\n", "third line\n"],
+    )
 
 
 def test_should_append_lines_without_trailing_new_line() -> None:
@@ -50,13 +43,10 @@ def test_should_append_lines_without_trailing_new_line() -> None:
 
     result = command(context)
 
-    assert result.cursor == 2
-    assert result.lines == [
-        "first line\n",
-        "second line\n",
-        "third line\n",
-    ]
-    assert len(result.lines) == 3
+    assert result == Context(
+        2,
+        ["first line\n", "second line\n", "third line\n"],
+    )
 
 
 def test_should_append_between_lines() -> None:
@@ -65,10 +55,7 @@ def test_should_append_between_lines() -> None:
 
     result = command(context)
 
-    assert result.cursor == 1
-    assert result.lines == [
-        "first line\n",
-        "second line\n",
-        "third line\n",
-    ]
-    assert len(result.lines) == 3
+    assert result == Context(
+        1,
+        ["first line\n", "second line\n", "third line\n"],
+    )

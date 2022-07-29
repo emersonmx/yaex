@@ -19,29 +19,32 @@ def make_context() -> Context:
 
 def test_should_move_cursor_to_first_line() -> None:
     context = make_context()
+    expected_lines = context.lines.copy()
     command = at_first_line()
 
     result = command(context)
 
-    assert result.cursor == 0
+    assert result == Context(0, expected_lines)
 
 
 def test_should_move_cursor_to_last_line() -> None:
     context = make_context()
+    expected_lines = context.lines.copy()
     command = at_last_line()
 
     result = command(context)
 
-    assert result.cursor == 5
+    assert result == Context(5, expected_lines)
 
 
 def test_should_move_cursor_to_any_line() -> None:
     context = make_context()
+    expected_lines = context.lines.copy()
     command = at_line(3)
 
     result = command(context)
 
-    assert result.cursor == 2
+    assert result == Context(2, expected_lines)
 
 
 @pytest.mark.parametrize(
