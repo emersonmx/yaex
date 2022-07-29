@@ -48,14 +48,14 @@ def at_line(line: int) -> Command:
     return cmd
 
 
-def _break_input_string(input_string: str) -> list[str]:
+def _split_lines(input_string: str) -> list[str]:
     return [line + "\n" for line in input_string.splitlines()]
 
 
 def insert(input_string: str) -> Command:
     def cmd(ctx: Context) -> Context:
         if ctx.lines:
-            input_lines = _break_input_string(input_string)
+            input_lines = _split_lines(input_string)
             cursor = ctx.cursor
             lines_before, lines_after = ctx.lines[:cursor], ctx.lines[cursor:]
             ctx.lines = lines_before + input_lines + lines_after
@@ -68,13 +68,11 @@ def insert(input_string: str) -> Command:
 
 def append(input_string: str) -> Command:
     def cmd(ctx: Context) -> Context:
-        if ctx.lines:
-            ctx.lines.insert(ctx.cursor + 1, input_string + "\n")
-            ctx.cursor += 1
-        else:
-            ctx.lines.append(input_string + "\n")
-            ctx.cursor = len(ctx.lines) - 1
-
+        input_lines = _split_lines(input_string)
+        cursor = ctx.cursor + 1
+        lines_before, lines_after = ctx.lines[:cursor], ctx.lines[cursor:]
+        ctx.lines = lines_before + input_lines + lines_after
+        ctx.cursor = len(lines_before) + len(input_lines) - 1
         return ctx
 
     return cmd
