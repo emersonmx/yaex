@@ -48,16 +48,18 @@ def at_line(line: int) -> Command:
     return cmd
 
 
+def _break_input_string(input_string: str) -> list[str]:
+    return [line + "\n" for line in input_string.splitlines()]
+
+
 def insert(input_string: str) -> Command:
     def cmd(ctx: Context) -> Context:
-        cursor, lines = ctx.cursor, ctx.lines
-        if lines:
-            input_lines = list(
-                map(lambda l: l + "\n", input_string.splitlines()),
-            )
-            lines_before, lines_after = lines[:cursor], lines[cursor:]
+        if ctx.lines:
+            input_lines = _break_input_string(input_string)
+            cursor = ctx.cursor
+            lines_before, lines_after = ctx.lines[:cursor], ctx.lines[cursor:]
             ctx.lines = lines_before + input_lines + lines_after
-            ctx.cursor = ctx.cursor + len(input_lines) - 1
+            ctx.cursor = len(lines_before) + len(input_lines) - 1
             return ctx
         raise InvalidOperation("Cannot insert into an empty buffer")
 

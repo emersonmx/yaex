@@ -63,6 +63,21 @@ def test_should_insert_lines_without_trailing_new_line() -> None:
     assert len(result.lines) == 4
 
 
+def test_should_insert_between_lines() -> None:
+    context = Context(1, ["first line\n", "third line\n"])
+
+    command = insert("second line")
+    result = command(context)
+
+    assert result.cursor == 1
+    assert result.lines == [
+        "first line\n",
+        "second line\n",
+        "third line\n",
+    ]
+    assert len(result.lines) == 3
+
+
 def test_should_raise_error_when_insert_into_an_empty_context() -> None:
     context = Context(0, [])
     command = insert("first line")
