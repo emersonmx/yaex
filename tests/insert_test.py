@@ -9,8 +9,8 @@ def make_context() -> Context:
 
 def test_should_insert_a_line() -> None:
     context = make_context()
-
     command = insert("a line")
+
     result = command(context)
 
     assert result.cursor == 0
@@ -33,8 +33,8 @@ def test_should_insert_lines() -> None:
 
 def test_should_insert_lines_in_a_single_command() -> None:
     context = make_context()
-
     command = insert("first line\nsecond line\nthird line\n")
+
     result = command(context)
 
     assert result.cursor == 2
@@ -49,8 +49,8 @@ def test_should_insert_lines_in_a_single_command() -> None:
 
 def test_should_insert_lines_without_trailing_new_line() -> None:
     context = make_context()
-
     command = insert("first line\nsecond line\nthird line")
+
     result = command(context)
 
     assert result.cursor == 2
@@ -65,8 +65,8 @@ def test_should_insert_lines_without_trailing_new_line() -> None:
 
 def test_should_insert_between_lines() -> None:
     context = Context(1, ["first line\n", "third line\n"])
-
     command = insert("second line")
+
     result = command(context)
 
     assert result.cursor == 1

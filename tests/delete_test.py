@@ -9,8 +9,8 @@ def make_context() -> Context:
 
 def test_should_delete_a_line() -> None:
     context = make_context()
-
     command = delete()
+
     result = command(context)
 
     assert result.cursor == 0
@@ -33,8 +33,8 @@ def test_should_delete_lines() -> None:
 
 def test_should_delete_between_lines() -> None:
     context = Context(1, ["first line\n", "second line\n", "third line\n"])
-
     command = delete()
+
     result = command(context)
 
     assert result.cursor == 1
