@@ -1,5 +1,5 @@
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from itertools import cycle, islice
 
@@ -90,14 +90,19 @@ def delete() -> Command:
     return cmd
 
 
-def search(input_regex: str) -> Command:
+def search(input_regex: str, reverse: bool = False) -> Command:
     pattern = re.compile(input_regex)
 
     def cmd(ctx: Context) -> Context:
         size = len(ctx.lines)
         cursor = ctx.cursor
-        lines_iterator = islice(cycle(ctx.lines), cursor, cursor + size)
-        for i, line in enumerate(lines_iterator, start=cursor):
+        lines_iterator: Iterable[tuple[int, str]] = enumerate(
+            islice(cycle(ctx.lines), cursor, cursor + size),
+            cursor,
+        )
+        if reverse:
+            lines_iterator = reversed(list(lines_iterator))
+        for i, line in lines_iterator:
             if pattern.search(line):
                 ctx.cursor = i % size
                 return ctx

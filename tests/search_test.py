@@ -56,24 +56,24 @@ def test_should_search_lines_in_loop() -> None:
     assert result == Context(0, expected_lines)
 
 
-# def test_should_start_reverse_search_from_current_line() -> None:
-#     context = Context(
-#         2,
-#         [
-#             "first line\n",
-#             "\n",
-#             "third line\n",
-#             "fourth line\n",
-#             "\n",
-#             "sixth line\n",
-#         ],
-#     )
-#     expected_lines = context.lines.copy()
-#     command = search(r"^$", reverse=True)
+def test_should_start_reverse_search_from_current_line() -> None:
+    context = Context(
+        2,
+        [
+            "first line\n",
+            "\n",
+            "third line\n",
+            "fourth line\n",
+            "\n",
+            "sixth line\n",
+        ],
+    )
+    expected_lines = context.lines.copy()
+    command = search(r"^$", reverse=True)
 
-#     result = command(context)
+    result = command(context)
 
-#     assert result == Context(1, expected_lines)
+    assert result == Context(1, expected_lines)
 
 
 def test_should_raise_error_when_not_found_the_pattern() -> None:
