@@ -16,7 +16,7 @@ def make_context() -> Context:
     )
 
 
-def test_should_move_cursor_to_found_line() -> None:
+def test_should_move_cursor_when_found_line() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
     command = search("fourth line")
@@ -26,7 +26,7 @@ def test_should_move_cursor_to_found_line() -> None:
     assert result == Context(3, expected_lines)
 
 
-def test_should_move_cursor_to_found_line_with_regex() -> None:
+def test_should_move_cursor_when_found_line_with_regex() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
     command = search(r"^fifth .*")
@@ -56,7 +56,7 @@ def test_should_search_lines_in_loop() -> None:
     assert result == Context(0, expected_lines)
 
 
-def test_should_start_reverse_search_from_current_line() -> None:
+def test_should_move_cursor_when_found_line_in_reverse() -> None:
     context = Context(
         2,
         [
