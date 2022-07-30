@@ -1,3 +1,4 @@
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -84,5 +85,21 @@ def delete() -> Command:
             del ctx.lines[ctx.cursor]
             return ctx
         raise InvalidOperation("Cannot delete to an empty buffer.")
+
+    return cmd
+
+
+def search(input_regex: str) -> Command:
+    pattern = re.compile(input_regex)
+
+    def cmd(ctx: Context) -> Context:
+        size = len(ctx.lines)
+        cursor = ctx.cursor
+        lines = ctx.lines[cursor:] + ctx.lines[:cursor]
+        for i, line in enumerate(lines, start=cursor):
+            if pattern.search(line):
+                ctx.cursor = i % size
+                return ctx
+        raise InvalidOperation("Pattern not found.")
 
     return cmd
