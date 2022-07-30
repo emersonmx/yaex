@@ -1,6 +1,7 @@
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
+from itertools import cycle, islice
 
 
 class InvalidOperation(Exception):
@@ -95,8 +96,8 @@ def search(input_regex: str) -> Command:
     def cmd(ctx: Context) -> Context:
         size = len(ctx.lines)
         cursor = ctx.cursor
-        lines = ctx.lines[cursor:] + ctx.lines[:cursor]
-        for i, line in enumerate(lines, start=cursor):
+        lines_iterator = islice(cycle(ctx.lines), cursor, cursor + size)
+        for i, line in enumerate(lines_iterator, start=cursor):
             if pattern.search(line):
                 ctx.cursor = i % size
                 return ctx
