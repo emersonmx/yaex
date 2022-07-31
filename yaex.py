@@ -24,7 +24,7 @@ def yaex(*commands: Command) -> str:
     return "".join(context.lines)
 
 
-def at_first_line() -> Command:
+def go_to_first_line() -> Command:
     def cmd(ctx: Context) -> Context:
         ctx.cursor = 0
         return ctx
@@ -32,7 +32,7 @@ def at_first_line() -> Command:
     return cmd
 
 
-def at_last_line() -> Command:
+def go_to_last_line() -> Command:
     def cmd(ctx: Context) -> Context:
         ctx.cursor = len(ctx.lines) - 1
         return ctx
@@ -40,7 +40,7 @@ def at_last_line() -> Command:
     return cmd
 
 
-def at_line(line: int) -> Command:
+def go_to(line: int) -> Command:
     def cmd(ctx: Context) -> Context:
         if 1 <= line <= len(ctx.lines):
             ctx.cursor = line - 1

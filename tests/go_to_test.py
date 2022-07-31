@@ -1,6 +1,12 @@
 import pytest
 
-from yaex import Context, InvalidOperation, at_first_line, at_last_line, at_line
+from yaex import (
+    Context,
+    InvalidOperation,
+    go_to,
+    go_to_first_line,
+    go_to_last_line,
+)
 
 
 def make_context() -> Context:
@@ -20,7 +26,7 @@ def make_context() -> Context:
 def test_should_move_cursor_to_first_line() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
-    command = at_first_line()
+    command = go_to_first_line()
 
     result = command(context)
 
@@ -30,7 +36,7 @@ def test_should_move_cursor_to_first_line() -> None:
 def test_should_move_cursor_to_last_line() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
-    command = at_last_line()
+    command = go_to_last_line()
 
     result = command(context)
 
@@ -40,7 +46,7 @@ def test_should_move_cursor_to_last_line() -> None:
 def test_should_move_cursor_to_any_line() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
-    command = at_line(3)
+    command = go_to(3)
 
     result = command(context)
 
@@ -55,7 +61,7 @@ def test_should_raise_error_when_move_the_cursor_to_an_invalid_line(
     line: int,
 ) -> None:
     context = make_context()
-    command = at_line(line)
+    command = go_to(line)
 
     with pytest.raises(InvalidOperation):
         command(context)
