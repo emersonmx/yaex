@@ -1,3 +1,5 @@
 [flake8]
 max-line-length = 80
 max-complexity = 10
+per-file-ignores =
+    yaex/__init__.py: N813

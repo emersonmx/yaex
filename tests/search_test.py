@@ -59,7 +59,7 @@ def test_should_search_lines_in_loop() -> None:
 def test_should_move_cursor_when_found_line_in_reverse() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
-    command = search("first", reverse=True)
+    command = search("first").in_reverse()
 
     result = command(context)
 
@@ -69,7 +69,7 @@ def test_should_move_cursor_when_found_line_in_reverse() -> None:
 def test_should_start_reverse_search_from_previous_line() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
-    command = search("line", reverse=True)
+    command = search("line").in_reverse()
 
     result = command(context)
 
@@ -79,7 +79,7 @@ def test_should_start_reverse_search_from_previous_line() -> None:
 def test_should_reverse_search_lines_in_loop() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
-    command = search(r"^$", reverse=True)
+    command = search(r"^$").in_reverse()
 
     result = command(context)
 

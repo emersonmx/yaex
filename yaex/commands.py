@@ -94,22 +94,27 @@ def delete() -> Command:
     return cmd
 
 
-def search(input_regex: str, reverse: bool = False) -> Command:
-    pattern = re.compile(input_regex)
+class SearchCommand:
+    def __init__(self, input_regex: str) -> None:
+        self._input_regex = input_regex
+        self._pattern = re.compile(input_regex)
+        self._reverse = False
 
-    def cmd(ctx: Context) -> Context:
+    def in_reverse(self) -> "SearchCommand":
+        self._reverse = True
+        return self
+
+    def __call__(self, ctx: Context) -> Context:
         size = len(ctx.lines)
         cursor = ctx.cursor
         lines_iterator: Iterable[tuple[int, str]] = enumerate(
             islice(cycle(ctx.lines), cursor, cursor + size),
             cursor,
         )
-        if reverse:
+        if self._reverse:
             lines_iterator = reversed(list(lines_iterator))
         for i, line in lines_iterator:
-            if pattern.search(line):
+            if self._pattern.search(line):
                 ctx.cursor = i % size
                 return ctx
         raise InvalidOperation("Pattern not found.")
-
-    return cmd

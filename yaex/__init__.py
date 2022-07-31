@@ -1,7 +1,6 @@
+from .commands import Command, Context, InvalidOperation
+from .commands import SearchCommand as search
 from .commands import (
-    Command,
-    Context,
-    InvalidOperation,
     append,
     delete,
     go_to,
@@ -9,7 +8,6 @@ from .commands import (
     go_to_last_line,
     insert,
     move,
-    search,
 )
 
 
