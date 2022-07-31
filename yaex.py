@@ -50,6 +50,17 @@ def go_to(line: int) -> Command:
     return cmd
 
 
+def move(offset: int) -> Command:
+    def cmd(ctx: Context) -> Context:
+        line = ctx.cursor + offset
+        if 0 <= line <= len(ctx.lines) - 1:
+            ctx.cursor = line
+            return ctx
+        raise InvalidOperation("The requested line does not exist.")
+
+    return cmd
+
+
 def _split_lines(input_string: str) -> list[str]:
     return [line + "\n" for line in input_string.splitlines()]
 
