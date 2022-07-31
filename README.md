@@ -5,7 +5,7 @@ This is a library based on the ex command. So, it works the same way :)
 ## Usage
 
 ```python
-from yaex import append, at_first_line, at_line, delete, insert, yaex
+from yaex import append, go_to_first_line, go_to, delete, insert, yaex
 
 result = yaex(
     append("Hello"),
@@ -20,7 +20,7 @@ result = yaex(
     append("first line"),
     append("second line"),
     append("third line"),
-    at_line(2),
+    go_to(2),
     delete(),
 )
 print(result)
@@ -30,7 +30,7 @@ print(result)
 
 result = yaex(
     append("# yaex\n\nThis is a library based on the ex command.\n"),
-    at_first_line(),
+    go_to_first_line(),
     delete(),
     insert("# Yet Another EX command library"),
 )
