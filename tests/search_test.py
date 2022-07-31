@@ -16,7 +16,7 @@ def make_context() -> Context:
     )
 
 
-def test_should_move_cursor_when_found_line() -> None:
+def test_should_move_cursor_to_found_line() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
     command = search("fifth line")
@@ -26,7 +26,7 @@ def test_should_move_cursor_when_found_line() -> None:
     assert result == Context(4, expected_lines)
 
 
-def test_should_move_cursor_when_found_line_with_regex() -> None:
+def test_should_move_cursor_to_found_line_with_regex() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
     command = search(r"^fifth .*")
@@ -46,7 +46,7 @@ def test_should_start_search_from_current_line() -> None:
     assert result == Context(2, expected_lines)
 
 
-def test_should_search_lines_in_loop() -> None:
+def test_should_make_a_loop_search_until_current_line() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
     command = search("first")
@@ -56,7 +56,7 @@ def test_should_search_lines_in_loop() -> None:
     assert result == Context(0, expected_lines)
 
 
-def test_should_move_cursor_when_found_line_in_reverse() -> None:
+def test_should_move_cursor_to_found_line_in_reverse() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
     command = search("first").in_reverse()
@@ -76,7 +76,7 @@ def test_should_start_reverse_search_from_previous_line() -> None:
     assert result == Context(0, expected_lines)
 
 
-def test_should_reverse_search_lines_in_loop() -> None:
+def test_should_make_a_reverse_loop_search_until_current_line() -> None:
     context = make_context()
     expected_lines = context.lines.copy()
     command = search(r"^$").in_reverse()
@@ -86,7 +86,7 @@ def test_should_reverse_search_lines_in_loop() -> None:
     assert result == Context(1, expected_lines)
 
 
-def test_should_raise_error_when_not_found_the_pattern() -> None:
+def test_should_raise_error_when_pattern_not_found() -> None:
     context = Context(0, [])
     command = search("unknown line")
 
