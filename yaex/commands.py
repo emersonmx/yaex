@@ -17,13 +17,6 @@ class Context:
 Command = Callable[[Context], Context]
 
 
-def yaex(*commands: Command) -> str:
-    context = Context(cursor=0, lines=[])
-    for command in commands:
-        context = command(context)
-    return "".join(context.lines)
-
-
 def go_to_first_line() -> Command:
     def cmd(ctx: Context) -> Context:
         ctx.cursor = 0
