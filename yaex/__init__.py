@@ -1,5 +1,6 @@
 from .commands import Command, Context, InvalidOperation
 from .commands import SearchCommand as search
+from .commands import SubstituteCommand as substitute
 from .commands import (
     append,
     delete,
@@ -30,5 +31,6 @@ __all__ = [
     "insert",
     "move",
     "search",
+    "substitute",
     "yaex",
 ]

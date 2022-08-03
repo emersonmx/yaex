@@ -118,3 +118,30 @@ class SearchCommand:
                 ctx.cursor = i % size
                 return ctx
         raise InvalidOperation("Pattern not found.")
+
+
+class SubstituteCommand:
+    def __init__(self, search_regex: str, replace_regex: str) -> None:
+        self._search_regex = search_regex
+        self._replace_regex = replace_regex
+        self._replace_times = 1
+        self._pattern = re.compile(search_regex)
+
+    def every_time(self) -> "SubstituteCommand":
+        return self.times(0)
+
+    def times(self, count: int) -> "SubstituteCommand":
+        self._replace_times = count
+        return self
+
+    def __call__(self, ctx: Context) -> Context:
+        line = ctx.lines[ctx.cursor]
+        new_line, changes = self._pattern.subn(
+            self._replace_regex,
+            line,
+            self._replace_times,
+        )
+        if changes > 0:
+            ctx.lines[ctx.cursor] = new_line
+            return ctx
+        raise InvalidOperation("Substitute pattern not found.")
