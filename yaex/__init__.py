@@ -1,9 +1,10 @@
-from .commands import Command, Context, InvalidOperation
+from .commands import Command, Context
+from .commands import DeleteCommand as delete
+from .commands import InvalidOperation
 from .commands import SearchCommand as search
 from .commands import SubstituteCommand as substitute
 from .commands import (
     append,
-    delete,
     go_to,
     go_to_first_line,
     go_to_last_line,

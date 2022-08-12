@@ -84,14 +84,34 @@ def append(input_string: str) -> Command:
     return cmd
 
 
-def delete() -> Command:
-    def cmd(ctx: Context) -> Context:
+class DeleteCommand:
+    def __init__(self) -> None:
+        self._range: tuple[int, int] | None = None
+
+    def from_range(self, begin: int, end: int) -> "DeleteCommand":
+        self._range = begin, end
+        return self
+
+    def __call__(self, ctx: Context) -> Context:
         if ctx.lines:
-            del ctx.lines[ctx.cursor]
+            if self._range:
+                begin, end = self._range
+                if begin > end:
+                    raise InvalidOperation("The end range comes before begin.")
+
+                size = len(ctx.lines)
+                if 1 <= begin <= size and 1 <= end <= size:
+                    begin = begin - 1
+                    del ctx.lines[begin:end]
+                    ctx.cursor = begin
+                    return ctx
+                raise InvalidOperation(
+                    f"The range is not between 1 and {size}.",
+                )
+            else:
+                del ctx.lines[ctx.cursor]
             return ctx
         raise InvalidOperation("Cannot delete to an empty buffer.")
-
-    return cmd
 
 
 class SearchCommand:
