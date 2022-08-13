@@ -1,7 +1,8 @@
 import re
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import cycle, islice
+from typing import Protocol
 
 
 class InvalidOperation(Exception):
@@ -19,74 +20,75 @@ class Context:
     lines: list[str]
 
 
-Command = Callable[[Context], Context]
+class Command(Protocol):
+    def __call__(self, context: Context) -> Context:
+        ...
 
 
-def go_to_first_line() -> Command:
-    def cmd(ctx: Context) -> Context:
-        ctx.cursor = 1
-        return ctx
-
-    return cmd
+class GoToFirstLineCommand:
+    def __call__(self, context: Context) -> Context:
+        context.cursor = 1
+        return context
 
 
-def go_to_last_line() -> Command:
-    def cmd(ctx: Context) -> Context:
-        ctx.cursor = len(ctx.lines)
-        return ctx
-
-    return cmd
+class GoToLastLineCommand:
+    def __call__(self, context: Context) -> Context:
+        context.cursor = len(context.lines)
+        return context
 
 
-def go_to(line: LineNumber) -> Command:
-    def cmd(ctx: Context) -> Context:
-        if 1 <= line <= len(ctx.lines):
-            ctx.cursor = line
+class GoToCommand:
+    def __init__(self, line: LineNumber) -> None:
+        self.line = line
+
+    def __call__(self, ctx: Context) -> Context:
+        if 1 <= self.line <= len(ctx.lines):
+            ctx.cursor = self.line
             return ctx
         raise InvalidOperation("The requested line does not exist.")
 
-    return cmd
 
+class MoveCommand:
+    def __init__(self, offset: LineOffset) -> None:
+        self.offset = offset
 
-def move(offset: LineOffset) -> Command:
-    def cmd(ctx: Context) -> Context:
-        line = ctx.cursor + offset
-        if 1 <= line <= len(ctx.lines):
-            ctx.cursor = line
-            return ctx
+    def __call__(self, context: Context) -> Context:
+        line = context.cursor + self.offset
+        if 1 <= line <= len(context.lines):
+            context.cursor = line
+            return context
         raise InvalidOperation("The requested line does not exist.")
 
-    return cmd
 
+class InsertCommand:
+    def __init__(self, input_string: str) -> None:
+        self.input_string = input_string
 
-def _split_lines(input_string: str) -> list[str]:
-    return [line + "\n" for line in input_string.splitlines()]
-
-
-def insert(input_string: str) -> Command:
-    def cmd(ctx: Context) -> Context:
-        if ctx.lines:
-            input_lines = _split_lines(input_string)
-            pivot = to_index(ctx.cursor)
-            lines_before, lines_after = ctx.lines[:pivot], ctx.lines[pivot:]
-            ctx.lines = lines_before + input_lines + lines_after
-            ctx.cursor = len(lines_before) + len(input_lines)
-            return ctx
+    def __call__(self, context: Context) -> Context:
+        if context.lines:
+            input_lines = split_lines(self.input_string)
+            pivot = to_index(context.cursor)
+            lines_before, lines_after = (
+                context.lines[:pivot],
+                context.lines[pivot:],
+            )
+            context.lines = lines_before + input_lines + lines_after
+            context.cursor = len(lines_before) + len(input_lines)
+            return context
         raise InvalidOperation("Cannot insert into an empty buffer")
 
-    return cmd
 
+class AppendCommand:
+    def __init__(self, input_string: str) -> None:
+        self.input_string = input_string
 
-def append(input_string: str) -> Command:
-    def cmd(ctx: Context) -> Context:
-        input_lines = _split_lines(input_string)
-        pivot = to_index(ctx.cursor + 1)
-        lines_before, lines_after = ctx.lines[:pivot], ctx.lines[pivot:]
-        ctx.lines = lines_before + input_lines + lines_after
-        ctx.cursor = len(lines_before) + len(input_lines)
-        return ctx
-
-    return cmd
+    def __call__(self, context: Context) -> Context:
+        input_lines = split_lines(self.input_string)
+        pivot = to_index(context.cursor + 1)
+        lines_before, lines_after = context.lines[:pivot], context.lines[pivot:]
+        context.lines = lines_before + input_lines + lines_after
+        context.cursor = len(lines_before) + len(input_lines)
+        return context
 
 
 class DeleteCommand:
@@ -170,6 +172,10 @@ class SearchCommand:
     def _to_line_number(self, line: LineNumber) -> LineNumber:
         return line % len(self._context.lines)
 
+    def _resolve_line(self, context: Context) -> LineNumber:
+        self._context = context
+        return self._search_line()
+
 
 class SubstituteCommand:
     def __init__(self, search_regex: str, replace_regex: str) -> None:
@@ -197,6 +203,18 @@ class SubstituteCommand:
             ctx.lines[index] = new_line
             return ctx
         raise InvalidOperation("Substitute pattern not found.")
+
+
+class CurrentLineResolver:
+    def __init__(self, line: LineNumber) -> None:
+        self.line = line
+
+    def _resolve_line(self, context: Context) -> LineNumber:
+        return self.line
+
+
+def split_lines(input_string: str) -> list[str]:
+    return [line + "\n" for line in input_string.splitlines()]
 
 
 def to_line(index: LineIndex) -> LineNumber:
