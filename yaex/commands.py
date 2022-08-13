@@ -65,10 +65,9 @@ class InsertCommand:
     def __call__(self, context: Context) -> Context:
         if context.lines:
             input_lines = split_lines(self.input_string)
-            pivot = to_index(context.cursor)
-            lines_before, lines_after = (
-                context.lines[:pivot],
-                context.lines[pivot:],
+            lines_before, lines_after = split_lines_at_cursor(
+                context.lines,
+                context.cursor,
             )
             context.lines = lines_before + input_lines + lines_after
             context.cursor = len(lines_before) + len(input_lines)
@@ -82,8 +81,10 @@ class AppendCommand:
 
     def __call__(self, context: Context) -> Context:
         input_lines = split_lines(self.input_string)
-        pivot = to_index(context.cursor + 1)
-        lines_before, lines_after = context.lines[:pivot], context.lines[pivot:]
+        lines_before, lines_after = split_lines_at_cursor(
+            context.lines,
+            context.cursor + 1,
+        )
         context.lines = lines_before + input_lines + lines_after
         context.cursor = len(lines_before) + len(input_lines)
         return context
@@ -212,6 +213,14 @@ def raise_for_line_number(line: LineNumber, context: Context) -> None:
     if 1 <= line <= len(context.lines):
         return
     raise InvalidOperation("The requested line does not exist.")
+
+
+def split_lines_at_cursor(
+    lines: list[str],
+    cursor: LineNumber,
+) -> tuple[list[str], list[str]]:
+    pivot = to_index(cursor)
+    return lines[:pivot], lines[pivot:]
 
 
 def split_lines(input_string: str) -> list[str]:
