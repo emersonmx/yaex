@@ -42,10 +42,9 @@ class GoToCommand:
         self.line = line
 
     def __call__(self, context: Context) -> Context:
-        if 1 <= self.line <= len(context.lines):
-            context.cursor = self.line
-            return context
-        raise InvalidOperation("The requested line does not exist.")
+        raise_for_line_number(self.line, context)
+        context.cursor = self.line
+        return context
 
 
 class MoveCommand:
@@ -54,10 +53,9 @@ class MoveCommand:
 
     def __call__(self, context: Context) -> Context:
         line = context.cursor + self.offset
-        if 1 <= line <= len(context.lines):
-            context.cursor = line
-            return context
-        raise InvalidOperation("The requested line does not exist.")
+        raise_for_line_number(line, context)
+        context.cursor = line
+        return context
 
 
 class InsertCommand:
@@ -110,15 +108,12 @@ class DeleteCommand:
                 if begin > end:
                     raise InvalidOperation("The end range comes before begin.")
 
-                size = len(context.lines)
-                if (1 <= begin <= size) and (1 <= end <= size):
-                    begin = to_index(begin)
-                    del context.lines[begin:end]
-                    context.cursor = to_line(begin)
-                    return context
-                raise InvalidOperation(
-                    f"The range is not between 1 and {size}.",
-                )
+                raise_for_line_number(begin, context)
+                raise_for_line_number(end, context)
+                begin = to_index(begin)
+                del context.lines[begin:end]
+                context.cursor = to_line(begin)
+                return context
             else:
                 index = to_index(context.cursor)
                 del context.lines[index]
@@ -211,6 +206,12 @@ class CurrentLineResolver:
 
     def _resolve_line(self, context: Context) -> LineNumber:
         return self.line
+
+
+def raise_for_line_number(line: LineNumber, context: Context) -> None:
+    if 1 <= line <= len(context.lines):
+        return
+    raise InvalidOperation("The requested line does not exist.")
 
 
 def split_lines(input_string: str) -> list[str]:
