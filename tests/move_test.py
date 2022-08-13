@@ -3,55 +3,47 @@ import pytest
 from yaex import Context, InvalidOperation, move
 
 
-def make_context() -> Context:
-    return Context(
-        2,
-        [
-            "first line\n",
-            "second line\n",
-            "third line\n",
-            "fourth line\n",
-            "fifth line\n",
-        ],
-    )
+@pytest.fixture
+def context(context: Context) -> Context:
+    context.cursor = 2
+    return context
 
 
-def test_should_stay_at_same_line() -> None:
-    context = make_context()
-    expected_lines = context.lines.copy()
+def test_should_stay_at_same_line(context: Context, lines: list[str]) -> None:
     command = move(0)
 
     result = command(context)
 
-    assert result == Context(2, expected_lines)
+    assert result == Context(2, lines)
 
 
-def test_should_move_to_next_line() -> None:
-    context = make_context()
-    expected_lines = context.lines.copy()
+def test_should_move_to_next_line(context: Context, lines: list[str]) -> None:
     command = move(1)
 
     result = command(context)
 
-    assert result == Context(3, expected_lines)
+    assert result == Context(3, lines)
 
 
-def test_should_move_to_previous_line() -> None:
-    context = make_context()
-    expected_lines = context.lines.copy()
+def test_should_move_to_previous_line(
+    context: Context,
+    lines: list[str],
+) -> None:
     command = move(-1)
 
     result = command(context)
 
-    assert result == Context(1, expected_lines)
+    assert result == Context(1, lines)
 
 
 @pytest.mark.parametrize(
     "offset",
-    [-10, -3, 3, 10],
+    [-10, -5, -2, 5, 10],
 )
-def test_should_raise_error_when_invalid_move(offset: int) -> None:
-    context = make_context()
+def test_should_raise_error_when_invalid_move(
+    offset: int,
+    context: Context,
+) -> None:
     command = move(offset)
 
     with pytest.raises(InvalidOperation):

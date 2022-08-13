@@ -1,95 +1,76 @@
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 import pytest
 
 from yaex import Context, InvalidOperation, delete
 
 
-def make_lines() -> list[str]:
-    return [
-        "first line\n",
-        "second line\n",
-        "third line\n",
-        "fourth line\n",
-        "fifth line\n",
-        "sixth line\n",
-    ]
-
-
-def make_ilines() -> Iterable[tuple[int, str]]:
-    return enumerate(make_lines(), start=1)
-
-
-def make_context() -> Context:
-    return Context(0, make_lines())
-
-
-def test_should_delete_a_line() -> None:
-    context = make_context()
-    expected_lines = make_lines()
-    del expected_lines[0]
+def test_should_delete_a_line(context: Context, lines: list[str]) -> None:
+    del lines[0]
     command = delete()
 
     result = command(context)
 
-    assert result == Context(0, expected_lines)
+    assert result == Context(1, lines)
 
 
-def test_should_delete_lines() -> None:
-    context = make_context()
-    expected_lines = make_lines()
-    del expected_lines[0:2]
+def test_should_delete_lines(context: Context, lines: list[str]) -> None:
+    del lines[0:2]
 
     command = delete()
     context = command(context)
     command = delete()
     result = command(context)
 
-    assert result == Context(0, expected_lines)
+    assert result == Context(1, lines)
 
 
-def test_should_delete_between_lines() -> None:
-    context = make_context()
-    context.cursor = 1
-    expected_lines = make_lines()
-    del expected_lines[1]
+def test_should_delete_between_lines(
+    context: Context,
+    lines: list[str],
+) -> None:
+    context.cursor = 2
+    del lines[1]
     command = delete()
 
     result = command(context)
 
-    assert result == Context(1, expected_lines)
+    assert result == Context(2, lines)
 
 
-def test_should_raise_error_when_delete_an_empty_context() -> None:
-    context = Context(0, [])
+def test_should_raise_error_when_delete_an_empty_context(
+    empty_context: Context,
+) -> None:
     command = delete()
 
     with pytest.raises(InvalidOperation):
-        command(context)
+        command(empty_context)
 
 
 @pytest.mark.parametrize(
-    "begin, end, expected_lines",
+    "begin, end, line_filter",
     [
-        (1, 1, [l for i, l in make_ilines() if i != 1]),
-        (6, 6, [l for i, l in make_ilines() if i != 6]),
-        (2, 2, [l for i, l in make_ilines() if i != 2]),
-        (1, 5, [l for i, l in make_ilines() if not (1 <= i <= 5)]),
-        (2, 6, [l for i, l in make_ilines() if not (2 <= i <= 6)]),
-        (2, 4, [l for i, l in make_ilines() if not (2 <= i <= 4)]),
+        (1, 1, lambda i: i != 1),
+        (6, 6, lambda i: i != 6),
+        (2, 2, lambda i: i != 2),
+        (1, 5, lambda i: not (1 <= i <= 5)),
+        (2, 6, lambda i: not (2 <= i <= 6)),
+        (2, 4, lambda i: not (2 <= i <= 4)),
     ],
 )
 def test_should_delete_from_range(
     begin: int,
     end: int,
-    expected_lines: list[str],
+    line_filter: Callable[[int], bool],
+    context: Context,
+    ilines: Iterable[tuple[int, str]],
 ) -> None:
-    context = make_context()
+    expected_lines = [l for i, l in ilines if line_filter(i)]
     command = delete().from_range(begin, end)
 
     result = command(context)
 
-    assert result == Context(begin - 1, expected_lines)
+    assert result == Context(begin, expected_lines)
 
 
 @pytest.mark.parametrize(
@@ -101,10 +82,10 @@ def test_should_delete_from_range(
     ],
 )
 def test_should_raise_error_when_delete_an_invalid_range(
+    context: Context,
     begin: int,
     end: int,
 ) -> None:
-    context = make_context()
     command = delete().from_range(begin, end)
 
     with pytest.raises(InvalidOperation):
