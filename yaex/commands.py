@@ -129,25 +129,46 @@ class SearchCommand:
         self._input_regex = input_regex
         self._pattern = re.compile(input_regex)
         self._reverse = False
+        self._context: Context
 
     def in_reverse(self) -> "SearchCommand":
         self._reverse = True
         return self
 
     def __call__(self, ctx: Context) -> Context:
-        size = len(ctx.lines)
-        cursor = ctx.cursor
-        lines_iterator: Iterable[tuple[LineNumber, str]] = enumerate(
-            islice(cycle(ctx.lines), cursor, cursor + size),
+        self._context = ctx
+        self._context.cursor = self._search_line()
+        return self._context
+
+    def _search_line(self) -> LineNumber:
+        for line_number, line_text in self._make_lines_iterator():
+            if self._match_pattern(line_text):
+                return self._to_line_number(line_number)
+        raise InvalidOperation("Pattern not found.")
+
+    def _make_lines_iterator(self) -> Iterable[tuple[LineNumber, str]]:
+        if self._reverse:
+            return self._make_reverse_lines_iterator()
+        else:
+            return self._make_forward_lines_iterator()
+
+    def _make_reverse_lines_iterator(self) -> Iterable[tuple[LineNumber, str]]:
+        iterator = self._make_forward_lines_iterator()
+        return reversed(list(iterator))
+
+    def _make_forward_lines_iterator(self) -> Iterable[tuple[LineNumber, str]]:
+        size = len(self._context.lines)
+        cursor = self._context.cursor
+        return enumerate(
+            islice(cycle(self._context.lines), cursor, cursor + size),
             cursor,
         )
-        if self._reverse:
-            lines_iterator = reversed(list(lines_iterator))
-        for i, line in lines_iterator:
-            if self._pattern.search(line):
-                ctx.cursor = i % size
-                return ctx
-        raise InvalidOperation("Pattern not found.")
+
+    def _match_pattern(self, line: str) -> bool:
+        return bool(self._pattern.search(line))
+
+    def _to_line_number(self, line: LineNumber) -> LineNumber:
+        return line % len(self._context.lines)
 
 
 class SubstituteCommand:
