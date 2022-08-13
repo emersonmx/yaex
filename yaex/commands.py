@@ -50,12 +50,17 @@ class GoToCommand:
 class MoveCommand:
     def __init__(self, offset: LineOffset) -> None:
         self.offset = offset
+        self._context: Context
 
     def __call__(self, context: Context) -> Context:
-        line = context.cursor + self.offset
-        raise_for_line_number(line, context)
-        context.cursor = line
-        return context
+        self._context = context
+        line = self._move()
+        raise_for_line_number(line, self._context)
+        self._context.cursor = line
+        return self._context
+
+    def _move(self) -> LineNumber:
+        return self._context.cursor + self.offset
 
 
 class InsertCommand:
