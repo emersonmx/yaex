@@ -41,10 +41,10 @@ class GoToCommand:
     def __init__(self, line: LineNumber) -> None:
         self.line = line
 
-    def __call__(self, ctx: Context) -> Context:
-        if 1 <= self.line <= len(ctx.lines):
-            ctx.cursor = self.line
-            return ctx
+    def __call__(self, context: Context) -> Context:
+        if 1 <= self.line <= len(context.lines):
+            context.cursor = self.line
+            return context
         raise InvalidOperation("The requested line does not exist.")
 
 
@@ -103,26 +103,26 @@ class DeleteCommand:
         self._range = begin, end
         return self
 
-    def __call__(self, ctx: Context) -> Context:
-        if ctx.lines:
+    def __call__(self, context: Context) -> Context:
+        if context.lines:
             if self._range:
                 begin, end = self._range
                 if begin > end:
                     raise InvalidOperation("The end range comes before begin.")
 
-                size = len(ctx.lines)
+                size = len(context.lines)
                 if (1 <= begin <= size) and (1 <= end <= size):
                     begin = to_index(begin)
-                    del ctx.lines[begin:end]
-                    ctx.cursor = to_line(begin)
-                    return ctx
+                    del context.lines[begin:end]
+                    context.cursor = to_line(begin)
+                    return context
                 raise InvalidOperation(
                     f"The range is not between 1 and {size}.",
                 )
             else:
-                index = to_index(ctx.cursor)
-                del ctx.lines[index]
-            return ctx
+                index = to_index(context.cursor)
+                del context.lines[index]
+            return context
         raise InvalidOperation("Cannot delete to an empty buffer.")
 
 
@@ -137,8 +137,8 @@ class SearchCommand:
         self._reverse = True
         return self
 
-    def __call__(self, ctx: Context) -> Context:
-        self._context = ctx
+    def __call__(self, context: Context) -> Context:
+        self._context = context
         self._context.cursor = self._search_line()
         return self._context
 
@@ -191,17 +191,17 @@ class SubstituteCommand:
         self._replace_times = count
         return self
 
-    def __call__(self, ctx: Context) -> Context:
-        index = to_index(ctx.cursor)
-        line = ctx.lines[index]
+    def __call__(self, context: Context) -> Context:
+        index = to_index(context.cursor)
+        line = context.lines[index]
         new_line, changes = self._pattern.subn(
             self._replace_regex,
             line,
             self._replace_times,
         )
         if changes > 0:
-            ctx.lines[index] = new_line
-            return ctx
+            context.lines[index] = new_line
+            return context
         raise InvalidOperation("Substitute pattern not found.")
 
 
