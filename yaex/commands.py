@@ -25,16 +25,33 @@ class Command(Protocol):
         ...
 
 
+class LineResolverCallback(Protocol):
+    def _resolve_line(self, context: Context) -> LineNumber:
+        ...
+
+
+LineResolver = LineNumber | LineResolverCallback
+
+
 class GoToFirstLineCommand:
     def __call__(self, context: Context) -> Context:
-        context.cursor = 1
+        context.cursor = self._get_line()
         return context
+
+    def _get_line(self) -> LineNumber:
+        return 1
+
+    def _resolve_line(self, context: Context) -> LineNumber:
+        return self._get_line()
 
 
 class GoToLastLineCommand:
     def __call__(self, context: Context) -> Context:
         context.cursor = len(context.lines)
         return context
+
+    def _resolve_line(self, context: Context) -> LineNumber:
+        return len(context.lines)
 
 
 class GoToCommand:
@@ -45,6 +62,9 @@ class GoToCommand:
         raise_for_line_number(self.line, context)
         context.cursor = self.line
         return context
+
+    def _resolve_line(self, context: Context) -> LineNumber:
+        return self.line
 
 
 class MoveCommand:
@@ -61,6 +81,10 @@ class MoveCommand:
 
     def _move(self) -> LineNumber:
         return self._context.cursor + self.offset
+
+    def _resolve_line(self, context: Context) -> LineNumber:
+        self._context = context
+        return self._move()
 
 
 class InsertCommand:
@@ -97,32 +121,37 @@ class AppendCommand:
 
 class DeleteCommand:
     def __init__(self) -> None:
-        self._range: tuple[LineNumber, LineNumber] | None = None
+        self._range: tuple[LineResolverCallback, LineResolverCallback] = (
+            make_current_line_resolver(),
+            make_current_line_resolver(),
+        )
 
     def from_range(
         self,
-        begin: LineNumber,
-        end: LineNumber,
+        begin: LineResolver,
+        end: LineResolver,
     ) -> "DeleteCommand":
+        if isinstance(begin, int):
+            begin = GoToCommand(begin)
+        if isinstance(end, int):
+            end = GoToCommand(end)
         self._range = begin, end
+
         return self
 
     def __call__(self, context: Context) -> Context:
         if context.lines:
-            if self._range:
-                begin, end = self._range
-                if begin > end:
-                    raise InvalidOperation("The end range comes before begin.")
+            begin_resolver, end_resolver = self._range
+            begin = begin_resolver._resolve_line(context)
+            end = end_resolver._resolve_line(context)
+            if begin > end:
+                raise InvalidOperation("The end range comes before begin.")
 
-                raise_for_line_number(begin, context)
-                raise_for_line_number(end, context)
-                begin = to_index(begin)
-                del context.lines[begin:end]
-                context.cursor = to_line(begin)
-                return context
-            else:
-                index = to_index(context.cursor)
-                del context.lines[index]
+            raise_for_line_number(begin, context)
+            raise_for_line_number(end, context)
+            begin_index = to_index(begin)
+            del context.lines[begin_index:end]
+            context.cursor = begin
             return context
         raise InvalidOperation("Cannot delete to an empty buffer.")
 
@@ -175,7 +204,7 @@ class SearchCommand:
 
     def _resolve_line(self, context: Context) -> LineNumber:
         self._context = context
-        return self._search_line()
+        return to_line(self._search_line())
 
 
 class SubstituteCommand:
@@ -206,14 +235,6 @@ class SubstituteCommand:
         raise InvalidOperation("Substitute pattern not found.")
 
 
-class CurrentLineResolver:
-    def __init__(self, line: LineNumber) -> None:
-        self.line = line
-
-    def _resolve_line(self, context: Context) -> LineNumber:
-        return self.line
-
-
 def raise_for_line_number(line: LineNumber, context: Context) -> None:
     if 1 <= line <= len(context.lines):
         return
@@ -238,3 +259,7 @@ def to_line(index: LineIndex) -> LineNumber:
 
 def to_index(line: LineNumber) -> LineIndex:
     return line - 1
+
+
+def make_current_line_resolver() -> LineResolverCallback:
+    return MoveCommand(0)
