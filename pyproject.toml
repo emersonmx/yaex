@@ -4,6 +4,9 @@ version = "0.1.0"
 description = ""
 authors = ["Emerson Max de Medeiros Silva <emersonmx@gmail.com>"]
 license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/emersonmx/yaex"
+repository = "https://github.com/emersonmx/yaex"
 
 [tool.poetry.dependencies]
 python = "^3.10"
