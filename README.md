@@ -5,7 +5,7 @@ This is a library based on the ex command. So, it works the same way :)
 ## Usage
 
 ```python
-from yaex import append, go_to_first_line, go_to, delete, insert, yaex
+from yaex import *
 
 result = yaex(
     append("Hello"),
