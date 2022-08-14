@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yaex"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Emerson Max de Medeiros Silva <emersonmx@gmail.com>"]
 license = "MIT"
