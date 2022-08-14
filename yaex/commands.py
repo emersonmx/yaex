@@ -92,16 +92,17 @@ class InsertCommand:
         self.input_string = input_string
 
     def __call__(self, context: Context) -> Context:
-        if context.lines:
-            input_lines = split_lines(self.input_string)
-            lines_before, lines_after = split_lines_at_cursor(
-                context.lines,
-                context.cursor,
-            )
-            context.lines = lines_before + input_lines + lines_after
-            context.cursor = len(lines_before) + len(input_lines)
-            return context
-        raise InvalidOperation("Cannot insert into an empty buffer")
+        if not context.lines:
+            raise InvalidOperation("Cannot insert into an empty buffer")
+
+        input_lines = split_lines(self.input_string)
+        lines_before, lines_after = split_lines_at_cursor(
+            context.lines,
+            context.cursor,
+        )
+        context.lines = lines_before + input_lines + lines_after
+        context.cursor = len(lines_before) + len(input_lines)
+        return context
 
 
 class AppendCommand:
@@ -131,29 +132,29 @@ class DeleteCommand:
         begin: LineResolver,
         end: LineResolver,
     ) -> "DeleteCommand":
-        if isinstance(begin, int):
+        if isinstance(begin, LineNumber):
             begin = GoToCommand(begin)
-        if isinstance(end, int):
+        if isinstance(end, LineNumber):
             end = GoToCommand(end)
         self._range = begin, end
-
         return self
 
     def __call__(self, context: Context) -> Context:
-        if context.lines:
-            begin_resolver, end_resolver = self._range
-            begin = begin_resolver._resolve_line(context)
-            end = end_resolver._resolve_line(context)
-            if begin > end:
-                raise InvalidOperation("The end range comes before begin.")
+        if not context.lines:
+            raise InvalidOperation("Cannot delete to an empty buffer.")
 
-            raise_for_line_number(begin, context)
-            raise_for_line_number(end, context)
-            begin_index = to_index(begin)
-            del context.lines[begin_index:end]
-            context.cursor = begin
-            return context
-        raise InvalidOperation("Cannot delete to an empty buffer.")
+        begin_resolver, end_resolver = self._range
+        begin = begin_resolver._resolve_line(context)
+        end = end_resolver._resolve_line(context)
+        if begin > end:
+            raise InvalidOperation("The end range comes before begin.")
+
+        raise_for_line_number(begin, context)
+        raise_for_line_number(end, context)
+        begin_index = to_index(begin)
+        del context.lines[begin_index:end]
+        context.cursor = begin
+        return context
 
 
 class SearchCommand:
