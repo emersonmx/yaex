@@ -9,6 +9,9 @@ def lines() -> list[str]:
         "first line first line first line\n",
         "second line second line second line\n",
         "third line third line third line\n",
+        "fourth line fourth line fourth line\n",
+        "fifth line fifth line fifth line\n",
+        "sixth line sixth line sixth line\n",
     ]
 
 
@@ -51,6 +54,18 @@ def test_should_substitute_a_text_every_time(
     result = command(context)
 
     assert result == Context(1, lines)
+
+
+def test_should_substitute_a_text_from_range(
+    context: Context,
+    lines: list[str],
+) -> None:
+    lines[2] = "3rd line third line third line\n"
+    command = substitute("third", "3rd").from_range(2, 5)
+
+    result = command(context)
+
+    assert result == Context(3, lines)
 
 
 def test_should_raise_error_when_text_not_found(context: Context) -> None:

@@ -122,21 +122,14 @@ class AppendCommand:
 
 class DeleteCommand:
     def __init__(self) -> None:
-        self._range: tuple[LineResolverCallback, LineResolverCallback] = (
-            make_current_line_resolver(),
-            make_current_line_resolver(),
-        )
+        self._range = make_default_line_resolver_callbacks()
 
     def from_range(
         self,
         begin: LineResolver,
         end: LineResolver,
     ) -> "DeleteCommand":
-        if isinstance(begin, LineNumber):
-            begin = GoToCommand(begin)
-        if isinstance(end, LineNumber):
-            end = GoToCommand(end)
-        self._range = begin, end
+        self._range = make_line_resolver_callbacks(begin, end)
         return self
 
     def __call__(self, context: Context) -> Context:
@@ -214,6 +207,8 @@ class SubstituteCommand:
         self._replace_regex = replace_regex
         self._replace_times = 1
         self._pattern = re.compile(search_regex)
+        self._range = make_default_line_resolver_callbacks()
+        self._context: Context
 
     def every_time(self) -> "SubstituteCommand":
         return self.times(0)
@@ -222,18 +217,63 @@ class SubstituteCommand:
         self._replace_times = count
         return self
 
+    def from_range(
+        self,
+        begin: LineResolver,
+        end: LineResolver,
+    ) -> "SubstituteCommand":
+        self._range = make_line_resolver_callbacks(begin, end)
+        return self
+
     def __call__(self, context: Context) -> Context:
-        index = to_index(context.cursor)
-        line = context.lines[index]
-        new_line, changes = self._pattern.subn(
+        self._context = context
+        match_found = False
+        for line_number, line_text in self._make_lines_iterator():
+            new_line, changes = self._substitute(line_text)
+            if changes > 0:
+                line_index = to_index(line_number)
+                self._context.cursor = line_number
+                self._context.lines[line_index] = new_line
+                match_found = True
+
+        if match_found:
+            return self._context
+
+        raise InvalidOperation("Substitute pattern not found.")
+
+    def _make_lines_iterator(self) -> Iterable[tuple[LineNumber, str]]:
+        begin_resolver, end_resolver = self._range
+        begin = begin_resolver._resolve_line(self._context)
+        end = end_resolver._resolve_line(self._context)
+        return enumerate(
+            islice(self._context.lines, to_index(begin), end),
+            begin,
+        )
+
+    def _substitute(self, line: str) -> tuple[str, int]:
+        return self._pattern.subn(
             self._replace_regex,
             line,
             self._replace_times,
         )
-        if changes > 0:
-            context.lines[index] = new_line
-            return context
-        raise InvalidOperation("Substitute pattern not found.")
+
+
+def make_default_line_resolver_callbacks() -> tuple[
+    LineResolverCallback,
+    LineResolverCallback,
+]:
+    return MoveCommand(0), MoveCommand(0)
+
+
+def make_line_resolver_callbacks(
+    begin: LineResolver,
+    end: LineResolver,
+) -> tuple[LineResolverCallback, LineResolverCallback]:
+    if isinstance(begin, LineNumber):
+        begin = GoToCommand(begin)
+    if isinstance(end, LineNumber):
+        end = GoToCommand(end)
+    return begin, end
 
 
 def raise_for_line_number(line: LineNumber, context: Context) -> None:
@@ -260,7 +300,3 @@ def to_line(index: LineIndex) -> LineNumber:
 
 def to_index(line: LineNumber) -> LineIndex:
     return line - 1
-
-
-def make_current_line_resolver() -> LineResolverCallback:
-    return MoveCommand(0)
