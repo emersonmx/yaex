@@ -1,6 +1,18 @@
+import re
+
 import pytest
 
-from yaex import Context, InvalidOperation, substitute
+from yaex import (
+    Context,
+    InvalidOperation,
+    go_to,
+    go_to_first_line,
+    go_to_last_line,
+    move,
+    search,
+    substitute,
+)
+from yaex.commands import LineNumber, LineResolver, make_line_resolver_callbacks
 
 
 @pytest.fixture
@@ -56,16 +68,57 @@ def test_should_substitute_a_text_every_time(
     assert result == Context(1, lines)
 
 
+@pytest.mark.parametrize(
+    "begin, end, search_regex, replace_regex, count, cursor",
+    [
+        (2, 2, "line", "LINE", 1, 2),
+        (1, 1, "line", "LINE", 1, 1),
+        (6, 6, "line", "LINE", 1, 6),
+        (1, 6, "line", "LINE", 1, 6),
+        (1, 5, "line", "LINE", 1, 5),
+        (2, 6, "line", "LINE", 1, 6),
+        (2, 5, "line", "LINE", 1, 5),
+        (2, 5, "second", "2nd", 1, 2),
+        (2, 5, "third", "3rd", 1, 3),
+        (2, 5, "fifth", "5th", 1, 5),
+        (2, go_to(5), "third", "3rd", 1, 3),
+        (go_to(2), 5, "third", "3rd", 1, 3),
+        (go_to(2), go_to(5), "third", "3rd", 1, 3),
+        (2, move(4), "third", "3rd", 1, 3),
+        (move(1), 5, "third", "3rd", 1, 3),
+        (move(1), move(4), "third", "3rd", 1, 3),
+        (1, go_to_last_line(), "line", "LINE", 1, 6),
+        (go_to_first_line(), 6, "line", "LINE", 1, 6),
+        (go_to_first_line(), go_to_last_line(), "line", "LINE", 1, 6),
+        (2, search("fifth"), "third", "3rd", 1, 3),
+        (search("second"), 5, "third", "3rd", 1, 3),
+        (search("second"), search("fifth"), "third", "3rd", 1, 3),
+    ],
+)
 def test_should_substitute_a_text_from_range(
+    begin: LineResolver,
+    end: LineResolver,
+    search_regex: str,
+    replace_regex: str,
+    count: int,
+    cursor: LineNumber,
     context: Context,
-    lines: list[str],
 ) -> None:
-    lines[2] = "3rd line third line third line\n"
-    command = substitute("third", "3rd").from_range(2, 5)
+    begin_resolver, end_resolver = make_line_resolver_callbacks(begin, end)
+    lines = []
+    for line_number, line_text in enumerate(context.lines.copy(), start=1):
+        new_line = line_text
+        begin_line = begin_resolver._resolve_line(context)
+        end_line = end_resolver._resolve_line(context)
+        if begin_line <= line_number <= end_line:
+            new_line = re.sub(search_regex, replace_regex, line_text, count)
+        lines.append(new_line)
+
+    command = substitute(search_regex, replace_regex).from_range(begin, end)
 
     result = command(context)
 
-    assert result == Context(3, lines)
+    assert result == Context(cursor, lines)
 
 
 def test_should_raise_error_when_text_not_found(context: Context) -> None:
