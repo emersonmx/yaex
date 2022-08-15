@@ -39,4 +39,26 @@ print(result)
 # >
 # >This is a library based on the ex command.
 # >
+
+result = yaex(
+    append("first line\nsecond line\nthird line\nfourth line\nfifth line\nsixth line\n"),
+    delete().from_range(search("second"), search("fifth")),
+)
+print(result)
+# >first line
+# >sixth line
+# >
+
+result = yaex(
+    append("first line\nsecond line\nthird line\nfourth line\nfifth line\nsixth line\n"),
+    substitute("line", "LINE").from_range(go_to_first_line(), go_to_last_line()),
+)
+print(result)
+# >first LINE
+# >second LINE
+# >third LINE
+# >fourth LINE
+# >fifth LINE
+# >sixth LINE
+# >
 ```
