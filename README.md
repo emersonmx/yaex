@@ -29,6 +29,30 @@ print(result)
 # >
 
 result = yaex(
+    append("first line"),
+    append("second line"),
+    append("third line"),
+    move(-1),
+    delete(),
+)
+print(result)
+# >first line
+# >third line
+# >
+
+result = yaex(
+    append("first line"),
+    append("second line"),
+    append("third line"),
+    search("second"),
+    delete(),
+)
+print(result)
+# >first line
+# >third line
+# >
+
+result = yaex(
     append("# yaex\n\nThis is a library based on the ex command.\n"),
     go_to_first_line(),
     delete(),
