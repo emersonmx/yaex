@@ -169,7 +169,7 @@ class SearchCommand:
     def _search_line(self) -> LineNumber:
         for line_number, line_text in self._make_lines_iterator():
             if self._match_pattern(line_text):
-                return self._to_line_number(line_number)
+                return self._to_valid_line(line_number)
         raise InvalidOperation("Pattern not found.")
 
     def _make_lines_iterator(self) -> Iterable[tuple[LineNumber, str]]:
@@ -183,22 +183,23 @@ class SearchCommand:
         return reversed(list(iterator))
 
     def _make_forward_lines_iterator(self) -> Iterable[tuple[LineNumber, str]]:
-        size = len(self._context.lines)
         cursor = self._context.cursor
+        index = to_index(cursor)
+        size = len(self._context.lines)
         return enumerate(
-            islice(cycle(self._context.lines), cursor, cursor + size),
+            islice(cycle(self._context.lines), index, index + size),
             cursor,
         )
 
     def _match_pattern(self, line: str) -> bool:
         return bool(self._pattern.search(line))
 
-    def _to_line_number(self, line: LineNumber) -> LineNumber:
-        return line % len(self._context.lines)
+    def _to_valid_line(self, line: LineNumber) -> LineNumber:
+        return to_line(to_index(line) % len(self._context.lines))
 
     def _resolve_line(self, context: Context) -> LineNumber:
         self._context = context
-        return to_line(self._search_line())
+        return self._search_line()
 
 
 class SubstituteCommand:

@@ -16,7 +16,7 @@ def lines() -> list[str]:
 
 @pytest.fixture
 def context(lines: list[str]) -> Context:
-    return Context(2, lines.copy())
+    return Context(3, lines.copy())
 
 
 def test_should_move_cursor_to_found_line(
@@ -27,7 +27,7 @@ def test_should_move_cursor_to_found_line(
 
     result = command(context)
 
-    assert result == Context(4, lines)
+    assert result == Context(5, lines)
 
 
 def test_should_move_cursor_to_found_line_with_regex(
@@ -38,7 +38,7 @@ def test_should_move_cursor_to_found_line_with_regex(
 
     result = command(context)
 
-    assert result == Context(4, lines)
+    assert result == Context(5, lines)
 
 
 def test_should_start_search_from_current_line(
@@ -49,7 +49,7 @@ def test_should_start_search_from_current_line(
 
     result = command(context)
 
-    assert result == Context(2, lines)
+    assert result == Context(3, lines)
 
 
 def test_should_make_a_loop_search_until_current_line(
@@ -60,7 +60,7 @@ def test_should_make_a_loop_search_until_current_line(
 
     result = command(context)
 
-    assert result == Context(0, lines)
+    assert result == Context(1, lines)
 
 
 def test_should_move_cursor_to_found_line_in_reverse(
@@ -71,7 +71,7 @@ def test_should_move_cursor_to_found_line_in_reverse(
 
     result = command(context)
 
-    assert result == Context(0, lines)
+    assert result == Context(1, lines)
 
 
 def test_should_start_reverse_search_from_previous_line(
@@ -82,7 +82,7 @@ def test_should_start_reverse_search_from_previous_line(
 
     result = command(context)
 
-    assert result == Context(0, lines)
+    assert result == Context(1, lines)
 
 
 def test_should_make_a_reverse_loop_search_until_current_line(
@@ -93,7 +93,7 @@ def test_should_make_a_reverse_loop_search_until_current_line(
 
     result = command(context)
 
-    assert result == Context(1, lines)
+    assert result == Context(2, lines)
 
 
 def test_should_raise_error_when_pattern_not_found(
