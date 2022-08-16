@@ -2,9 +2,21 @@ from invoke import Context, task
 
 
 @task
-def run(c):
+def run(_):
     # type: (Context) -> None
-    c.run("python yaex.py")
+    from yaex import append, delete, go_to_first_line, move, search, yaex
+
+    with open("README.md") as f:
+        readme_data = f.read()
+
+    readme_code = yaex(
+        append(readme_data),
+        delete(),
+        search(r"```python").in_reverse(),
+        delete().from_range(go_to_first_line(), move(0)),
+    )
+
+    exec(readme_code)  # nosec
 
 
 @task(aliases=("fmt",))
