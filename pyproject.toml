@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "yaex"
-version = "0.1.2"
-description = ""
+version = "1.0.0"
+description = "This is a library based on the ex command."
 authors = ["Emerson Max de Medeiros Silva <emersonmx@gmail.com>"]
 license = "MIT"
 readme = "README.md"
